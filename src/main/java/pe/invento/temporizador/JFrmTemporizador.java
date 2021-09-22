@@ -5,11 +5,8 @@
  */
 package pe.invento.temporizador;
 
-import java.awt.event.ActionEvent;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import javax.swing.Timer;
+import java.util.TimerTask;
+import java.util.Timer;
 
 /**
  *
@@ -37,24 +34,31 @@ public class JFrmTemporizador extends javax.swing.JFrame {
 
     public void asignarMinutoInicial(int minutoInicial) {
         if (timer != null) {
-            timer.stop();
+            timer.cancel();
         }
         
         Temporizador temporizador = Temporizador.getInstance();
         temporizador.establecerTemporizador(minutoInicial, 0);
-        timer = new Timer(1000, (ActionEvent e) -> {
-            System.out.println("Tiempo: " + LocalDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), 
-                    ZoneId.systemDefault()));
-            jlblTiempo.setText(temporizador.obtenerTemporizador());
-            temporizador.establecerTemporizador(temporizador.obtenerSiguienteMinuto(), 
-                    temporizador.obtenerSiguienteSegundo());
-        });
-        timer.start();
+        jlblTiempo.setText(temporizador.obtenerTemporizador());
+        
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+//                System.out.println("TimerTask: " + LocalDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), 
+//                    ZoneId.systemDefault()));
+                temporizador.establecerTemporizador(temporizador.obtenerSiguienteMinuto(), 
+                        temporizador.obtenerSiguienteSegundo());
+                jlblTiempo.setText(temporizador.obtenerTemporizador());
+            }
+        };
+        
+        timer = new Timer();
+        timer.scheduleAtFixedRate(timerTask, 1000, 1000);
     }
     
     public void detenerTemporizador() {
         if (timer != null) {
-            timer.stop();
+            timer.cancel();
         }
     }
     
@@ -117,7 +121,7 @@ public class JFrmTemporizador extends javax.swing.JFrame {
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         if (timer != null) {
-            timer.stop();
+            timer.cancel();
         }
     }//GEN-LAST:event_formWindowClosing
 
